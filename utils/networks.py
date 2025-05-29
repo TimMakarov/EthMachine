@@ -60,7 +60,6 @@ OptimismRPC = Network(
     name='Optimism',
     rpc=[
         'https://optimism.drpc.org',
-        'https://1rpc.io/op'
     ],
     chain_id=10,
     eip1559_support=True,
