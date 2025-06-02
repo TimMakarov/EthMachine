@@ -35,23 +35,40 @@ class Relay(Bridge, Logger):
         return await self.make_request(url=url, headers=headers, params=params)
 
     async def get_bridge_data(self, dest_chain_id, amount_in_wei):
-        url = f"https://api.relay.link/execute/call"
+        url = f"https://api.relay.link/quote"
 
-        payload = {
-            "user": self.client.address,
-            "txs": [
-                {
-                    "to": self.client.address,
-                    "value": amount_in_wei,
-                    "data": "0x"
-                }
-            ],
-            "originChainId": self.client.network.chain_id,
-            "destinationChainId": dest_chain_id,
-            "source": "relay.link"
+        headers = {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "ru,en-US;q=0.9,en;q=0.8,ru-RU;q=0.7",
+            "content-type": "application/json",
+            "priority": "u=1, i",
+            "sec-ch-ua": "\"Not/A)Brand\";v=\"24\", \"Chromium\";v=\"129\", \"Google Chrome\";v=\"129\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            "referrer": "https://relay.link/",
+            "referrerPolicy": "strict-origin-when-cross-origin",
         }
 
-        return await self.make_request(method='POST', url=url, json=payload)
+        origin_currency = "0x0000000000000000000000000000000000000000"
+        destination_currency = "0x0000000000000000000000000000000000000000"
+
+        payload = {
+            "user": f"{self.client.address}",
+            "originChainId": self.client.chain_id,
+            "destinationChainId": dest_chain_id,
+            "originCurrency": origin_currency,
+            "destinationCurrency": destination_currency,
+            "recipient": self.client.address,
+            "tradeType": "EXACT_INPUT",
+            "amount": amount_in_wei,
+            "source": "relay.link/swap",
+            "useExternalLiquidity": "false"
+        }
+
+        return await self.make_request(method='POST', url=url, headers=headers, json=payload)
 
     async def bridge(self, chain_from_id: int, bridge_data: tuple, need_check: bool = False):
         from_chain, to_chain, amount, to_chain_id, token_name, _, from_token_address, to_token_address = bridge_data
